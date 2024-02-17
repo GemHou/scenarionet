@@ -224,10 +224,10 @@ def write_to_directory_single_worker(
         scenario_id = sd_scenario[SD.ID]
         export_file_name = SD.get_export_file_name(dataset_name, dataset_version, scenario_id)
 
-        if hasattr(SD, "update_summaries"):
-            SD.update_summaries(sd_scenario)
-        else:
-            raise ValueError("Please update MetaDrive to latest version.")
+        # if hasattr(SD, "update_summaries"):
+        #     SD.update_summaries(sd_scenario)
+        # else:
+        #     raise ValueError("Please update MetaDrive to latest version.")
 
         # update summary/mapping dict
         if export_file_name in summary:

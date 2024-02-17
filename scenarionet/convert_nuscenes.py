@@ -48,7 +48,7 @@ if __name__ == "__main__":
         " Only available if split is chosen from {}".format(prediction_split)
     )
     parser.add_argument("--overwrite", action="store_true", help="If the database_path exists, whether to overwrite it")
-    parser.add_argument("--num_workers", type=int, default=8, help="number of workers to use")
+    parser.add_argument("--num_workers", type=int, default=1, help="number of workers to use")
     args = parser.parse_args()
 
     overwrite = args.overwrite
