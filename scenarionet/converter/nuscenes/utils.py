@@ -428,7 +428,6 @@ def convert_nuscenes_scenario(
         past_num = int(past / 0.5)
         future_num = int(future / 0.5)
         nusc = nuscenes
-        print("!!! token: ", token)
         instance_token, sample_token = token.split("_")
         current_sample = last_sample = next_sample = nusc.get("sample", sample_token)
         past_samples = []
@@ -451,9 +450,6 @@ def convert_nuscenes_scenario(
         frames_scene_info = [frames, scene_info]
     else:
         frames_scene_info = extract_frames_scene_info(token, nuscenes)
-        print("token: ", token)
-        # instance_token, sample_token = token.split("_")
-        # instance_token = token
 
     scenario_log_interval = 0.1
     frames, scene_info = frames_scene_info
@@ -478,23 +474,15 @@ def convert_nuscenes_scenario(
 
     # No traffic light in nuscenes at this stage
     result[SD.DYNAMIC_MAP_STATES] = {}
-    # print("result: ", result)
-    # print("SD.TRACKS: ", SD.TRACKS)
-    # print("result[SD.TRACKS]: ", result[SD.TRACKS])
-    # for i in result[SD.TRACKS]:
-    #     print("i: ", i)
-    # print("instance_token: ", instance_token)
-    track_to_predict = result[SD.TRACKS]["ego"]
-    # print("track_to_predict: ", track_to_predict)
-    # print("list(result[SD.TRACKS].keys()): ", list(result[SD.TRACKS].keys()))
-    # result[SD.METADATA]["tracks_to_predict"] = {
-    #     {
-    #         "track_index": list(result[SD.TRACKS].keys()).index("ego"),  # instance_token
-    #         "track_id": "ego",
-    #         "difficulty": 0,
-    #         "object_type": track_to_predict['type']
-    #     }
-    # }
+    track_to_predict = result[SD.TRACKS][instance_token]
+    result[SD.METADATA]["tracks_to_predict"] = {
+        instance_token: {
+            "track_index": list(result[SD.TRACKS].keys()).index(instance_token),
+            "track_id": instance_token,
+            "difficulty": 0,
+            "object_type": track_to_predict['type']
+        }
+    }
     # map
     result[SD.MAP_FEATURES] = get_map_features(scene_info, nuscenes, map_center, map_radius, only_lane=only_lane)
     # add back map center
