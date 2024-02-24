@@ -206,13 +206,13 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
         if id == "ego" and not scene_info.get("prediction", False):
             assert "prediction" not in scene_info
             # We can get it from canbus
-            try:
-                canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
-                imu_pos = np.asarray([state["pos"] for state in canbus.get_messages(scene_info["name"], "pose")[::5]])
-                min_len = min(len(imu_pos), new_episode_len)
-                interpolate_tracks[id]["state"]["position"][:min_len] = imu_pos[:min_len]
-            except:
-                logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
+            # try:
+            canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
+            imu_pos = np.asarray([state["pos"] for state in canbus.get_messages(scene_info["name"], "pose")[::5]])
+            min_len = min(len(imu_pos), new_episode_len)
+            interpolate_tracks[id]["state"]["position"][:min_len] = imu_pos[:min_len]
+            # except:
+            #     logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
 
         # velocity
         interpolate_tracks[id]["state"]["velocity"] = interpolate(
@@ -236,18 +236,18 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
         if id == "ego" and not scene_info.get("prediction", False):
             assert "prediction" not in scene_info
             # We can get it from canbus
-            try:
-                canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
-                imu_heading = np.asarray(
-                    [
-                        quaternion_yaw(Quaternion(state["orientation"]))
-                        for state in canbus.get_messages(scene_info["name"], "pose")[::5]
-                    ]
-                )
-                min_len = min(len(imu_heading), new_episode_len)
-                interpolate_tracks[id]["state"]["heading"][:min_len] = imu_heading[:min_len]
-            except:
-                logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
+            # try:
+            canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
+            imu_heading = np.asarray(
+                [
+                    quaternion_yaw(Quaternion(state["orientation"]))
+                    for state in canbus.get_messages(scene_info["name"], "pose")[::5]
+                ]
+            )
+            min_len = min(len(imu_heading), new_episode_len)
+            interpolate_tracks[id]["state"]["heading"][:min_len] = imu_heading[:min_len]
+            # except:
+            #     logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
 
         for k, v in track["state"].items():
             if k in ["valid", "heading", "position", "velocity"]:
@@ -474,15 +474,15 @@ def convert_nuscenes_scenario(
 
     # No traffic light in nuscenes at this stage
     result[SD.DYNAMIC_MAP_STATES] = {}
-    track_to_predict = result[SD.TRACKS][instance_token]
-    result[SD.METADATA]["tracks_to_predict"] = {
-        instance_token: {
-            "track_index": list(result[SD.TRACKS].keys()).index(instance_token),
-            "track_id": instance_token,
-            "difficulty": 0,
-            "object_type": track_to_predict['type']
-        }
-    }
+    # track_to_predict = result[SD.TRACKS][instance_token]
+    # result[SD.METADATA]["tracks_to_predict"] = {
+    #     instance_token: {
+    #         "track_index": list(result[SD.TRACKS].keys()).index(instance_token),
+    #         "track_id": instance_token,
+    #         "difficulty": 0,
+    #         "object_type": track_to_predict['type']
+    #     }
+    # }
     # map
     result[SD.MAP_FEATURES] = get_map_features(scene_info, nuscenes, map_center, map_radius, only_lane=only_lane)
     # add back map center
