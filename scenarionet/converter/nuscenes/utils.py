@@ -262,7 +262,10 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
     map_center[-1] = 0
     normalized_ret = {}
     for id, track, in interpolate_tracks.items():
-        pos = track["state"]["position"] - map_center
+        # pos = track["state"]["position"] - map_center
+        # pos = track["state"]["position"]
+        # pos = track["state"]["position"] + map_center
+        pos = track["state"]["position"] - map_center * 2
         track["state"]["position"] = np.asarray(pos)
         normalized_ret[id] = track
 
@@ -325,7 +328,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
             id = "boundary_{}".format(idx)
             ret[id] = {
                 SD.TYPE: MetaDriveType.LINE_SOLID_SINGLE_WHITE,
-                SD.POLYLINE: block_points - np.asarray(map_center)[:2]
+                SD.POLYLINE: block_points - np.asarray(map_center)[:2] * 2
             }
 
         # broken line
@@ -334,7 +337,9 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
             assert line_info["token"] == id
             line = map_api.extract_line(line_info["line_token"]).coords.xy
             line = np.asarray([[line[0][i], line[1][i]] for i in range(len(line[0]))])
-            ret[id] = {SD.TYPE: MetaDriveType.LINE_BROKEN_SINGLE_WHITE, SD.POLYLINE: line - np.asarray(map_center)[:2]}
+            ret[id] = {SD.TYPE: MetaDriveType.LINE_BROKEN_SINGLE_WHITE,
+                       SD.POLYLINE: line - np.asarray(map_center)[:2] * 2
+                       }
 
         # solid line
         for id in map_objs["road_divider"]:
@@ -342,7 +347,9 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
             assert line_info["token"] == id
             line = map_api.extract_line(line_info["line_token"]).coords.xy
             line = np.asarray([[line[0][i], line[1][i]] for i in range(len(line[0]))])
-            ret[id] = {SD.TYPE: MetaDriveType.LINE_SOLID_SINGLE_YELLOW, SD.POLYLINE: line - np.asarray(map_center)[:2]}
+            ret[id] = {SD.TYPE: MetaDriveType.LINE_SOLID_SINGLE_YELLOW,
+                       SD.POLYLINE: line - np.asarray(map_center)[:2] * 2
+                       }
 
         # crosswalk
         for id in map_objs["ped_crossing"]:
@@ -352,7 +359,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
             boundary_polygon = np.asarray([[boundary[0][i], boundary[1][i]] for i in range(len(boundary[0]))])
             ret[id] = {
                 SD.TYPE: MetaDriveType.CROSSWALK,
-                SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2],
+                SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2] * 2
             }
 
         # walkway
@@ -363,7 +370,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
             boundary_polygon = np.asarray([[boundary[0][i], boundary[1][i]] for i in range(len(boundary[0]))])
             ret[id] = {
                 SD.TYPE: MetaDriveType.BOUNDARY_SIDEWALK,
-                SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2],
+                SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2] * 2
             }
 
     # normal lane
@@ -375,9 +382,8 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
         # boundary_polygon += [[boundary[0][i], boundary[1][i]] for i in range(len(boundary[0]))]
         ret[id] = {
             SD.TYPE: MetaDriveType.LANE_SURFACE_STREET,
-            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) -
-            np.asarray(map_center),
-            SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2],
+            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(map_center) * 2,
+            SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2] * 2,
             SD.ENTRY: map_api.get_incoming_lane_ids(id),
             SD.EXIT: map_api.get_outgoing_lane_ids(id),
             SD.LEFT_NEIGHBORS: [],
@@ -393,8 +399,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
         # boundary_polygon += [[boundary[0][i], boundary[1][i], 0.] for i in range(len(boundary[0]))]
         ret[id] = {
             SD.TYPE: MetaDriveType.LANE_SURFACE_UNSTRUCTURE,
-            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) -
-            np.asarray(map_center),
+            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(map_center) * 2,
             # SD.POLYGON: boundary_polygon,
             "speed_limit_kmh": 100,
             SD.ENTRY: map_api.get_incoming_lane_ids(id),
@@ -409,7 +414,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
     #     boundary_polygon = np.asarray([[boundary[0][i], boundary[1][i]] for i in range(len(boundary[0]))])
     #     ret[id] = {
     #         SD.TYPE: MetaDriveType.STOP_LINE,
-    #         SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2],
+    #         SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2] * 2
     #     }
 
     #         'stop_line',
