@@ -132,9 +132,9 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
             type=MetaDriveType.UNSET,
             state=dict(
                 position=np.zeros(shape=(episode_len, 3)),
-                heading=np.zeros(shape=(episode_len, )),
+                heading=np.zeros(shape=(episode_len,)),
                 velocity=np.zeros(shape=(episode_len, 2)),
-                valid=np.zeros(shape=(episode_len, )),
+                valid=np.zeros(shape=(episode_len,)),
                 length=np.zeros(shape=(episode_len, 1)),
                 width=np.zeros(shape=(episode_len, 1)),
                 height=np.zeros(shape=(episode_len, 1))
@@ -187,7 +187,7 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
         interpolate_tracks[id]["metadata"]["track_length"] = new_episode_len
 
         # valid first
-        new_valid = np.zeros(shape=(new_episode_len, ))
+        new_valid = np.zeros(shape=(new_episode_len,))
         if track["state"]["valid"][0]:
             new_valid[0] = 1
         for k, valid in enumerate(track["state"]["valid"][1:], start=1):
@@ -207,10 +207,10 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
             assert "prediction" not in scene_info
             # We can get it from canbus
             try:
-            	canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
-            	imu_pos = np.asarray([state["pos"] for state in canbus.get_messages(scene_info["name"], "pose")[::5]])
-            	min_len = min(len(imu_pos), new_episode_len)
-            	interpolate_tracks[id]["state"]["position"][:min_len] = imu_pos[:min_len]
+                canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
+                imu_pos = np.asarray([state["pos"] for state in canbus.get_messages(scene_info["name"], "pose")[::5]])
+                min_len = min(len(imu_pos), new_episode_len)
+                interpolate_tracks[id]["state"]["position"][:min_len] = imu_pos[:min_len]
             except:
                 logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
 
@@ -237,15 +237,15 @@ def get_tracks_from_frames(nuscenes: NuScenes, scene_info, frames, num_to_interp
             assert "prediction" not in scene_info
             # We can get it from canbus
             try:
-            	canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
-            	imu_heading = np.asarray(
-                    	[
-                    	quaternion_yaw(Quaternion(state["orientation"]))
-                    	for state in canbus.get_messages(scene_info["name"], "pose")[::5]
-                	]
-            	)
-            	min_len = min(len(imu_heading), new_episode_len)
-            	interpolate_tracks[id]["state"]["heading"][:min_len] = imu_heading[:min_len]
+                canbus = NuScenesCanBus(dataroot=nuscenes.dataroot)
+                imu_heading = np.asarray(
+                    [
+                        quaternion_yaw(Quaternion(state["orientation"]))
+                        for state in canbus.get_messages(scene_info["name"], "pose")[::5]
+                    ]
+                )
+                min_len = min(len(imu_heading), new_episode_len)
+                interpolate_tracks[id]["state"]["heading"][:min_len] = imu_heading[:min_len]
             except:
                 logger.info("Fail to get canbus data for {}".format(scene_info["name"]))
 
@@ -382,7 +382,9 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
         # boundary_polygon += [[boundary[0][i], boundary[1][i]] for i in range(len(boundary[0]))]
         ret[id] = {
             SD.TYPE: MetaDriveType.LANE_SURFACE_STREET,
-            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(map_center) * 2,
+            SD.POLYLINE: np.asarray(
+                discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(
+                map_center) * 2,
             SD.POLYGON: boundary_polygon - np.asarray(map_center)[:2] * 2,
             SD.ENTRY: map_api.get_incoming_lane_ids(id),
             SD.EXIT: map_api.get_outgoing_lane_ids(id),
@@ -399,7 +401,9 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
         # boundary_polygon += [[boundary[0][i], boundary[1][i], 0.] for i in range(len(boundary[0]))]
         ret[id] = {
             SD.TYPE: MetaDriveType.LANE_SURFACE_UNSTRUCTURE,
-            SD.POLYLINE: np.asarray(discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(map_center) * 2,
+            SD.POLYLINE: np.asarray(
+                discretize_lane(map_api.arcline_path_3[id], resolution_meters=points_distance)) - np.asarray(
+                map_center) * 2,
             # SD.POLYGON: boundary_polygon,
             "speed_limit_kmh": 100,
             SD.ENTRY: map_api.get_incoming_lane_ids(id),
@@ -424,7 +428,7 @@ def get_map_features(scene_info, nuscenes: NuScenes, map_center, radius=500, poi
 
 
 def convert_nuscenes_scenario(
-    token, version, nuscenes: NuScenes, map_radius=500, prediction=False, past=2, future=6, only_lane=False
+        token, version, nuscenes: NuScenes, map_radius=500, prediction=False, past=2, future=6, only_lane=False
 ):
     """
     Data will be interpolated to 0.1s time interval, while the time interval of original key frames are 0.5s.
