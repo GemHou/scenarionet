@@ -8,6 +8,7 @@ import os
 import pickle
 import shutil
 from functools import partial
+import tqdm
 
 import numpy as np
 import psutil
@@ -219,7 +220,7 @@ def write_to_directory_single_worker(
 
     count = 0
     # for scenario in tqdm.tqdm(scenarios, position=2, leave=True, desc=f"Worker {worker_index} Number of scenarios"):
-    for scenario in scenarios:
+    for scenario in tqdm.tqdm(scenarios):
         # convert scenario
         sd_scenario = convert_func(scenario, dataset_version, **kwargs)
         scenario_id = sd_scenario[SD.ID]
